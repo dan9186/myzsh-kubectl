@@ -1,0 +1,27 @@
+#!/usr/bin/zsh
+function _deps() {
+	app="kubectl"
+
+	$(hash $app 2>/dev/null) || $(myzsh error "Couldn't find application ${app}" && return 1)
+}
+
+function kubectl() {
+	local verb="$1"
+	local mod="$2"
+
+	case "$verb" in
+	"dashboard")
+		shift
+		command open -a "/Applications/Google Chrome.app" 'http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/login'
+	;;
+	"token")
+		shift
+		command kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}') | grep '^token' | cut -d ":" -f 2 | tr -d "[:space:]"
+	;;
+	*)
+		command kubectl "$@"
+	;;
+	esac
+}
+
+# vim: filetype=zsh noexpandtab
